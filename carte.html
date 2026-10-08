@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasty Crousty · Ma carte</title>
+</head>
+<body class="page">
+  <main class="shell gap-6">
+    <header class="flex flex-col items-center gap-3 animate-fade-in-up">
+      <div class="brand-logo">
+        <img src="/src/assets/logo_crousty.jpg" alt="Tasty Crousty" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h1 class="brand-title">TASTY<br>CROUSTY</h1>
+      <p id="greeting" class="pill">Ma carte de fidélité</p>
+    </header>
+
+    <section class="flex flex-col gap-3 animate-fade-in-up [animation-delay:0.1s]" aria-labelledby="stampsTitle">
+      <div class="flex items-baseline justify-between">
+        <h2 id="stampsTitle" class="field-label">Mes tampons</h2>
+        <p class="text-sm font-black"><span id="stampCount">0</span>/10</p>
+      </div>
+      <ol id="stamps" class="grid grid-cols-5 gap-2.5" aria-live="polite">
+        <li class="stamp">1</li>
+        <li class="stamp">2</li>
+        <li class="stamp">3</li>
+        <li class="stamp">4</li>
+        <li class="stamp">5</li>
+        <li class="stamp">6</li>
+        <li class="stamp">7</li>
+        <li class="stamp">8</li>
+        <li class="stamp">9</li>
+        <li class="stamp">🎁</li>
+      </ol>
+      <p id="rewardBanner" class="hidden text-center text-sm font-bold text-crousty-cyan">Ta carte est pleine : ton cadeau t'attend en caisse !</p>
+    </section>
+
+    <section class="flex flex-col items-center gap-3 animate-fade-in-up [animation-delay:0.2s]">
+      <h2 class="field-label">À montrer en caisse</h2>
+      <div class="bg-white rounded-2xl p-3">
+        <canvas id="cardQr" width="200" height="200" aria-label="QR code de ma carte"></canvas>
+      </div>
+    </section>
+
+    <section class="bg-white/5 border border-white/10 rounded-xl p-4 flex flex-col gap-1.5 animate-fade-in-up [animation-delay:0.3s]">
+      <h2 class="field-label">Mon code de secours</h2>
+      <p id="recoveryCode" class="text-lg font-mono font-bold tracking-widest text-crousty-cyan select-all">—</p>
+      <p class="text-[11px] text-gray-400">Fais une capture d'écran : ce code te permet de retrouver ta carte si tu changes de téléphone.</p>
+    </section>
+
+    <p id="cardError" class="text-xs text-crousty-pink text-center min-h-4" role="alert"></p>
+
+    <p class="footer-note">Tasty Crousty • Carte de fidélité</p>
+  </main>
+
+  <script type="module" src="/src/pages/carte.js"></script>
+</body>
+</html>

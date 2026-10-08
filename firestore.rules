@@ -1,0 +1,141 @@
+rules_version = '2';
+
+// Seul contrôle côté serveur du projet (pas de backend) : toute la validation des tampons passe ici.
+//
+// Modèle de données
+//   staff/{uid}                     compte équipe (créé à la main dans la console, jamais depuis le site)
+//   cards/{cardId}                  { ownerUid, firstName, stamps, lastStamp, createdAt, lastEventId?, recoveredWith? }
+//   cards/{cardId}/history/{id}     { type: 'stamp' | 'reward', at, staffUid }   journal, jamais modifié ni lu depuis le site
+//   cards/{cardId}/private/contact  { phone }                                    lisible par l'équipe seulement (RGPD)
+//   recovery/{code}                 { cardId }                                   code de secours, 10 caractères
+//
+// Cloisonnement des clients : un client ne lit et n'écrit que sa propre carte (ownerUid). Il ne peut ni lister
+// les cartes, ni lire le téléphone ou l'historique, ni modifier ses tampons. Seule passerelle entre deux
+// identités : le code de secours, qui transfère la carte à qui le connaît (risque accepté par le projet).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Un compte équipe se connecte par email (jamais en anonyme) et possède un document staff/{uid}.
+    function isStaff() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous'
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    function cardPath(cardId) {
+      return /databases/$(database)/documents/cards/$(cardId);
+    }
+
+    match /staff/{uid} {
+      // Permet à l'espace équipe de vérifier que le compte connecté est bien un compte équipe.
+      allow get: if signedIn() && request.auth.uid == uid;
+      allow list, write: if false;
+    }
+
+    match /cards/{cardId} {
+      function changedKeys() {
+        return request.resource.data.diff(resource.data).affectedKeys();
+      }
+
+      // Événement d'historique écrit dans le même batch que la modification de la carte.
+      function newEvent() {
+        return getAfter(/databases/$(database)/documents/cards/$(cardId)/history/$(request.resource.data.lastEventId)).data;
+      }
+
+      // +1 tampon exactement, au plus un par heure, journalisé.
+      function isStamp() {
+        return changedKeys().hasOnly(['stamps', 'lastStamp', 'lastEventId'])
+          && resource.data.stamps < 10
+          && request.resource.data.stamps == resource.data.stamps + 1
+          && request.resource.data.lastStamp == request.time
+          && (resource.data.lastStamp == null
+              || request.time > resource.data.lastStamp + duration.value(1, 'h'))
+          && newEvent().type == 'stamp'
+          && newEvent().at == request.time;
+      }
+
+      // Remise du cadeau : uniquement sur une carte pleine, remise à 0, journalisée.
+      function isReward() {
+        return changedKeys().hasOnly(['stamps', 'lastEventId'])
+          && resource.data.stamps == 10
+          && request.resource.data.stamps == 0
+          && newEvent().type == 'reward'
+          && newEvent().at == request.time;
+      }
+
+      // Changement de téléphone : la carte passe au nouvel uid anonyme sur présentation du code de secours.
+      function isRecovery() {
+        let code = request.resource.data.recoveredWith;
+        let recoveryPath = /databases/$(database)/documents/recovery/$(code);
+        return signedIn()
+          && changedKeys().hasOnly(['ownerUid', 'recoveredWith'])
+          && request.resource.data.ownerUid == request.auth.uid
+          && code is string
+          && exists(recoveryPath)
+          && get(recoveryPath).data.cardId == cardId;
+      }
+
+      allow get: if (signedIn() && resource.data.ownerUid == request.auth.uid) || isStaff();
+      allow list: if isStaff();
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid', 'firstName', 'stamps', 'lastStamp', 'createdAt'])
+        && request.resource.data.keys().hasAll(['ownerUid', 'firstName', 'stamps', 'lastStamp', 'createdAt'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 40
+        && request.resource.data.stamps == 0
+        && request.resource.data.lastStamp == null
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if (isStaff() && (isStamp() || isReward())) || isRecovery();
+      allow delete: if false;
+
+      match /history/{eventId} {
+        // Journal non consultable depuis le site (ni client ni équipe) : uniquement depuis la console Firebase.
+        allow read: if false;
+
+        // Un événement n'existe que s'il accompagne la modification de la carte qui le référence.
+        allow create: if isStaff()
+          && request.resource.data.keys().hasOnly(['type', 'at', 'staffUid'])
+          && request.resource.data.type in ['stamp', 'reward']
+          && request.resource.data.at == request.time
+          && request.resource.data.staffUid == request.auth.uid
+          && getAfter(cardPath(cardId)).data.lastEventId == eventId;
+
+        allow update, delete: if false;
+      }
+
+      match /private/{docId} {
+        allow get: if isStaff();
+
+        allow create: if docId == 'contact'
+          && signedIn()
+          && getAfter(cardPath(cardId)).data.ownerUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['phone'])
+          && request.resource.data.phone is string
+          && request.resource.data.phone.matches('^[+0-9 .]{6,20}$');
+
+        allow list, update, delete: if false;
+      }
+    }
+
+    match /recovery/{code} {
+      // Lecture par code exact uniquement : impossible de parcourir les codes.
+      allow get: if signedIn();
+      allow list, update, delete: if false;
+
+      // Alphabet sans caractères ambigus (pas de 0/O, 1/I/L), stocké sans tirets.
+      allow create: if signedIn()
+        && code.matches('^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$')
+        && request.resource.data.keys().hasOnly(['cardId'])
+        && request.resource.data.cardId is string
+        && getAfter(cardPath(request.resource.data.cardId)).data.ownerUid == request.auth.uid;
+    }
+  }
+}

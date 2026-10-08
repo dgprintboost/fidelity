@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasty Crousty · Ma carte de fidélité</title>
+</head>
+<body class="page">
+  <main class="shell gap-6">
+    <header class="flex flex-col items-center gap-3 animate-fade-in-up">
+      <div class="brand-logo">
+        <img src="/src/assets/logo_crousty.jpg" alt="Tasty Crousty" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h1 class="brand-title">TASTY<br>CROUSTY</h1>
+      <p class="pill">Carte de fidélité • Cergy</p>
+    </header>
+
+    <section class="flex flex-col gap-2 text-center animate-fade-in-up [animation-delay:0.1s]">
+      <h2 class="text-xl font-black">10 passages = 1 cadeau offert 🎁</h2>
+      <p class="text-sm text-gray-400">Crée ta carte en 30 secondes, puis montre-la en caisse à chaque passage.</p>
+    </section>
+
+    <form id="signupForm" class="flex flex-col gap-4 animate-fade-in-up [animation-delay:0.2s]" novalidate>
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label">Prénom</span>
+        <input id="firstName" name="firstName" class="field" type="text" autocomplete="given-name" maxlength="40" required>
+      </label>
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label">Téléphone</span>
+        <input id="phone" name="phone" class="field" type="tel" autocomplete="tel" inputmode="tel" maxlength="20" required>
+      </label>
+      <p id="signupError" class="text-xs text-crousty-pink min-h-4" role="alert"></p>
+      <button id="signupBtn" class="btn-primary" type="submit">Créer ma carte</button>
+    </form>
+
+    <a href="./recuperer.html" class="btn-secondary animate-fade-in-up [animation-delay:0.3s]">J'ai déjà une carte</a>
+
+    <p class="footer-note">Tasty Crousty • Carte de fidélité</p>
+  </main>
+
+  <script type="module" src="/src/pages/inscription.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/inter/900.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .page {
+    @apply font-sans bg-main-gradient bg-crousty-bg text-white min-h-[100svh] flex items-center justify-center p-4;
+  }
+
+  .shell {
+    @apply bg-glass-gradient backdrop-blur-[20px] shadow-[0_40px_100px_rgba(0,0,0,0.5)] w-full max-w-[480px] rounded-[35px] border border-white/10 p-6 flex flex-col relative overflow-hidden;
+  }
+
+  .brand-logo {
+    @apply w-20 h-20 rounded-full bg-white border-2 border-crousty-pink p-1 shadow-[0_0_25px_rgba(255,92,151,0.4)] overflow-hidden;
+  }
+
+  .brand-title {
+    @apply text-center text-4xl font-black italic tracking-tighter text-crousty-pink leading-none;
+  }
+
+  .pill {
+    @apply bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-crousty-cyan;
+  }
+
+  .field-label {
+    @apply text-[10px] text-gray-400 font-bold uppercase tracking-widest;
+  }
+
+  .field {
+    @apply w-full bg-crousty-tile border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-crousty-pink transition-colors;
+  }
+
+  .btn-primary {
+    @apply w-full bg-crousty-pink hover:bg-crousty-pink-dark text-white text-xs font-black uppercase py-3.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply w-full bg-gradient-to-b from-[#171c24] to-[#12171e] border border-white/20 rounded-xl py-3 text-xs font-black uppercase text-white flex items-center justify-center gap-2 shadow-xl transition-all active:scale-95;
+  }
+
+  .stamp {
+    @apply aspect-square rounded-full border-2 border-dashed border-white/15 flex items-center justify-center text-lg font-black text-white/20;
+  }
+
+  .stamp-on {
+    @apply border-solid border-crousty-pink bg-crousty-pink/20 text-crousty-pink shadow-[0_0_15px_rgba(255,92,151,0.35)];
+  }
+
+  .footer-note {
+    @apply text-center mt-6 opacity-30 text-[9px] font-bold uppercase tracking-widest;
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "fidelity",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "firebase": "^13.0.0",
+    "qr-scanner": "^1.4.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^3.4.19",
+    "vite": "^8.3.3"
+  }
+}
