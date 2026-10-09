@@ -27,7 +27,7 @@ if (missing.length) {
 }
 
 // En local (dev et `vite preview`), App Check utilise un jeton de debug à enregistrer dans la console Firebase.
-if (env.DEV || location.hostname === 'localhost') {
+if (env.DEV || ['localhost', '127.0.0.1'].includes(location.hostname)) {
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = true
 }
 

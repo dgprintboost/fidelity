@@ -6,11 +6,10 @@ rules_version = '2';
 //   staff/{uid}                     compte équipe (créé à la main dans la console, jamais depuis le site)
 //   cards/{cardId}                  { ownerUid, firstName, stamps, lastStamp, createdAt, lastEventId?, recoveredWith? }
 //   cards/{cardId}/history/{id}     { type: 'stamp' | 'reward', at, staffUid }   journal, jamais modifié ni lu depuis le site
-//   cards/{cardId}/private/contact  { phone }                                    lisible par l'équipe seulement (RGPD)
 //   recovery/{code}                 { cardId }                                   code de secours, 10 caractères
 //
 // Cloisonnement des clients : un client ne lit et n'écrit que sa propre carte (ownerUid). Il ne peut ni lister
-// les cartes, ni lire le téléphone ou l'historique, ni modifier ses tampons. Seule passerelle entre deux
+// les cartes, ni lire l'historique, ni modifier ses tampons. Seule passerelle entre deux
 // identités : le code de secours, qui transfère la carte à qui le connaît (risque accepté par le projet).
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -109,19 +108,6 @@ service cloud.firestore {
           && getAfter(cardPath(cardId)).data.lastEventId == eventId;
 
         allow update, delete: if false;
-      }
-
-      match /private/{docId} {
-        allow get: if isStaff();
-
-        allow create: if docId == 'contact'
-          && signedIn()
-          && getAfter(cardPath(cardId)).data.ownerUid == request.auth.uid
-          && request.resource.data.keys().hasOnly(['phone'])
-          && request.resource.data.phone is string
-          && request.resource.data.phone.matches('^[+0-9 .]{6,20}$');
-
-        allow list, update, delete: if false;
       }
     }
 
