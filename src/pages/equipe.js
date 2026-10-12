@@ -16,6 +16,7 @@ const CARD_ID_PATTERN = /^[A-Za-z0-9]{20}$/
 const loginForm = document.getElementById('loginForm')
 const emailInput = document.getElementById('email')
 const passwordInput = document.getElementById('password')
+const togglePassword = document.getElementById('togglePassword')
 const loginError = document.getElementById('loginError')
 const loginBtn = document.getElementById('loginBtn')
 const staffPanel = document.getElementById('staffPanel')
@@ -75,8 +76,20 @@ onAuthStateChanged(auth, async (user) => {
   showStaffPanel(allowed)
 })
 
+function setPasswordVisible(visible) {
+  passwordInput.type = visible ? 'text' : 'password'
+  togglePassword.textContent = visible ? 'Masquer' : 'Afficher'
+  togglePassword.setAttribute('aria-pressed', String(visible))
+}
+
+togglePassword.addEventListener('click', () => setPasswordVisible(passwordInput.type === 'password'))
+// Le navigateur peut restaurer la page telle quelle (bouton Précédent, rechargement) : jamais en clair.
+window.addEventListener('pagehide', () => setPasswordVisible(false))
+
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault()
+  // Le mot de passe ne reste jamais affiché après l'envoi du formulaire.
+  setPasswordVisible(false)
   loginError.textContent = ''
   loginBtn.disabled = true
   try {
