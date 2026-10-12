@@ -1,5 +1,5 @@
 import { initializeApp, setLogLevel } from 'firebase/app'
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check'
 import { browserLocalPersistence, indexedDBLocalPersistence, initializeAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
@@ -33,8 +33,10 @@ if (import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DEBUG_TOKEN) {
 export const app = initializeApp(firebaseConfig)
 
 // App Check doit être initialisé avant toute requête vers Firestore ou Auth.
+// reCAPTCHA Enterprise (Google Cloud Fraud Defense, offre gratuite de 10 000 vérifications/mois) :
+// la version classique est obsolète. Durée de vie du jeton réglée à 1 jour dans la console App Check.
 initializeAppCheck(app, {
-  provider: new ReCaptchaV3Provider(env.VITE_RECAPTCHA_SITE_KEY),
+  provider: new ReCaptchaEnterpriseProvider(env.VITE_RECAPTCHA_SITE_KEY),
   isTokenAutoRefreshEnabled: true,
 })
 
