@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://content-firebaseappcheck.googleapis.com https://www.google.com/recaptcha/; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07090d">
+  <link rel="manifest" href="/fidelity/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/fidelity/icons/apple-touch-icon.png">
+  <title>Tasty Crousty · Ma carte de fidélité</title>
+  <script type="module" crossorigin src="/fidelity/assets/inscription-DUuoVIPT.js"></script>
+  <link rel="modulepreload" crossorigin href="/fidelity/assets/firebase-Cx5c5aku.js">
+  <link rel="modulepreload" crossorigin href="/fidelity/assets/recovery-code-DgFwetN4.js">
+  <link rel="stylesheet" crossorigin href="/fidelity/assets/firebase-C2ngo90D.css">
+</head>
+<body class="page">
+  <main class="shell gap-6">
+    <header class="flex flex-col items-center gap-3 animate-fade-in-up">
+      <div class="brand-logo">
+        <img src="/fidelity/assets/logo_crousty-BOQVJJha.jpg" alt="Tasty Crousty" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h1 class="brand-title">TASTY<br>CROUSTY</h1>
+      <p class="pill">Carte de fidélité • Cergy</p>
+    </header>
+
+    <a id="installedHint" href="./recuperer.html" class="hidden bg-crousty-cyan/10 border border-crousty-cyan/40 rounded-xl p-4 text-sm text-center">
+      <strong class="block text-crousty-cyan">Tu as déjà créé ta carte dans ton navigateur ?</strong>
+      Touche ici et saisis ton code de secours pour la retrouver dans l'app.
+    </a>
+
+    <section class="flex flex-col gap-2 text-center animate-fade-in-up [animation-delay:0.1s]">
+      <h2 class="text-xl font-black">10 passages = 1 cadeau offert 🎁</h2>
+      <p class="text-sm text-gray-400">Crée ta carte en 30 secondes, puis montre-la en caisse à chaque passage.</p>
+    </section>
+
+    <form id="signupForm" class="flex flex-col gap-4 animate-fade-in-up [animation-delay:0.2s]" novalidate>
+      <label class="flex flex-col gap-1.5">
+        <span class="field-label">Prénom</span>
+        <input id="firstName" name="firstName" class="field" type="text" autocomplete="given-name" maxlength="40" required>
+      </label>
+      <p id="signupError" class="text-xs text-crousty-pink min-h-4" role="alert"></p>
+      <button id="signupBtn" class="btn-primary" type="submit">Créer ma carte</button>
+    </form>
+
+    <a href="./recuperer.html" class="btn-secondary animate-fade-in-up [animation-delay:0.3s]">J'ai déjà une carte</a>
+
+    <p class="footer-note">Tasty Crousty • Carte de fidélité</p>
+  </main>
+
+</body>
+</html>
