@@ -5,7 +5,9 @@ import { initFirebase } from './firebase.js'
 export const { auth, db } = initFirebase()
 
 // Le téléphone ne garde que l'identifiant de sa carte, jamais les tampons : la carte vit dans Firestore.
-const CARD_KEY = 'fidelity:cardId'
+// Clé propre au projet Firebase : plusieurs enseignes publiées sur le même <compte>.github.io partagent
+// le stockage du navigateur, et l'une ne doit jamais lire ni effacer la carte d'une autre.
+const CARD_KEY = `fidelity:${import.meta.env.VITE_FIREBASE_PROJECT_ID}:cardId`
 
 export function getStoredCardId() {
   try {
