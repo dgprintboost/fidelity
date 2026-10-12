@@ -1,8 +1,7 @@
 import '../style.css'
 import { doc, getDoc, onSnapshot } from 'firebase/firestore'
 import QRCode from 'qrcode'
-import { StaffSessionError, clearStoredCardId, ensureClientUser, getStoredCardId } from '../lib/client.js'
-import { db } from '../lib/firebase.js'
+import { db, clearStoredCardId, ensureClientUser, getStoredCardId } from '../lib/client.js'
 import { isIos, isStandalone, registerServiceWorker } from '../lib/pwa.js'
 import { formatRecoveryCode } from '../lib/recovery-code.js'
 
@@ -55,12 +54,8 @@ async function showCard(id) {
     await ensureClientUser()
     // Le QR ne contient que l'identifiant de la carte : c'est l'équipe qui tamponne.
     await QRCode.toCanvas(qrCanvas, id, { width: 200, margin: 1 })
-  } catch (error) {
-    showError(
-      error instanceof StaffSessionError
-        ? error.message
-        : 'Impossible de charger ta carte. Vérifie ta connexion puis recharge la page.',
-    )
+  } catch {
+    showError('Impossible de charger ta carte. Vérifie ta connexion puis recharge la page.')
     return
   }
 

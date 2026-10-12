@@ -30,19 +30,28 @@ if (import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DEBUG_TOKEN) {
   self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_APPCHECK_DEBUG_TOKEN
 }
 
-export const app = initializeApp(firebaseConfig)
+// Deux instances Firebase indépendantes, chacune avec sa propre session :
+//  - l'instance par défaut pour les pages client (identité anonyme invisible, propriétaire de la carte) ;
+//  - l'instance « staff » pour l'espace équipe (connexion email).
+// Dans un même navigateur, se connecter à l'espace équipe ne remplace donc jamais l'identité anonyme
+// du client : sinon elle serait perdue définitivement, et la carte avec.
+export const STAFF_APP_NAME = 'staff'
 
-// App Check doit être initialisé avant toute requête vers Firestore ou Auth.
-// reCAPTCHA Enterprise (Google Cloud Fraud Defense, offre gratuite de 10 000 vérifications/mois) :
-// la version classique est obsolète. Durée de vie du jeton réglée à 1 jour dans la console App Check.
-initializeAppCheck(app, {
-  provider: new ReCaptchaEnterpriseProvider(env.VITE_RECAPTCHA_SITE_KEY),
-  isTokenAutoRefreshEnabled: true,
-})
+export function initFirebase(appName) {
+  const app = initializeApp(firebaseConfig, appName)
 
-// initializeAuth plutôt que getAuth : pas de popup ni de redirection dans ce projet, donc pas de
-// popupRedirectResolver, qui chargerait apis.google.com et une iframe bloqués par la CSP sur mobile.
-export const auth = initializeAuth(app, {
-  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-})
-export const db = getFirestore(app)
+  // App Check doit être initialisé avant toute requête vers Firestore ou Auth.
+  // reCAPTCHA Enterprise (Google Cloud Fraud Defense, offre gratuite de 10 000 vérifications/mois) :
+  // la version classique est obsolète. Durée de vie du jeton réglée à 1 jour dans la console App Check.
+  initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(env.VITE_RECAPTCHA_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  })
+
+  // initializeAuth plutôt que getAuth : pas de popup ni de redirection dans ce projet, donc pas de
+  // popupRedirectResolver, qui chargerait apis.google.com et une iframe bloqués par la CSP sur mobile.
+  const auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  })
+  return { auth, db: getFirestore(app) }
+}

@@ -1,7 +1,6 @@
 import '../style.css'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { StaffSessionError, ensureClientUser, getStoredCardId, storeCardId } from '../lib/client.js'
-import { db } from '../lib/firebase.js'
+import { db, ensureClientUser, getStoredCardId, storeCardId } from '../lib/client.js'
 import { registerServiceWorker } from '../lib/pwa.js'
 import { normalizeRecoveryCode } from '../lib/recovery-code.js'
 
@@ -60,11 +59,8 @@ form.addEventListener('submit', async (event) => {
       return
     }
     location.assign('./carte.html')
-  } catch (error) {
-    errorEl.textContent =
-      error instanceof StaffSessionError
-        ? error.message
-        : 'Impossible de retrouver la carte pour le moment. Réessaie dans un instant.'
+  } catch {
+    errorEl.textContent = 'Impossible de retrouver la carte pour le moment. Réessaie dans un instant.'
     submitBtn.disabled = false
   } finally {
     clearTimeout(slowTimer)

@@ -1,11 +1,11 @@
-import { signInAnonymously } from 'firebase/auth'
-import { auth } from './firebase.js'
+import { signInAnonymously, signOut } from 'firebase/auth'
+import { initFirebase } from './firebase.js'
+
+// Instance Firebase des pages client (instance par défaut), distincte de celle de l'espace équipe.
+export const { auth, db } = initFirebase()
 
 // Le téléphone ne garde que l'identifiant de sa carte, jamais les tampons : la carte vit dans Firestore.
 const CARD_KEY = 'fidelity:cardId'
-
-export const STAFF_SESSION_MESSAGE =
-  "Un compte équipe est connecté sur ce navigateur. Déconnecte-toi de l'espace équipe ou utilise un autre navigateur pour ta carte client."
 
 export function getStoredCardId() {
   try {
@@ -28,18 +28,13 @@ export function clearStoredCardId() {
   }
 }
 
-export class StaffSessionError extends Error {
-  constructor() {
-    super(STAFF_SESSION_MESSAGE)
-    this.name = 'StaffSessionError'
-  }
-}
-
 // Identité invisible du client : réutilise la session anonyme existante, sinon en ouvre une.
-// Une session équipe (email) n'est jamais utilisée pour une carte client.
 export async function ensureClientUser() {
   await auth.authStateReady()
   const user = auth.currentUser
-  if (user && !user.isAnonymous) throw new StaffSessionError()
-  return user ?? (await signInAnonymously(auth)).user
+  if (user?.isAnonymous) return user
+  // Sur cette instance, une session non anonyme n'est jamais légitime (l'équipe a sa propre instance) :
+  // c'est une session équipe héritée d'avant la séparation. Elle ne doit pas devenir propriétaire d'une carte.
+  if (user) await signOut(auth)
+  return (await signInAnonymously(auth)).user
 }

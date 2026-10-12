@@ -1,7 +1,6 @@
 import '../style.css'
 import { collection, doc, serverTimestamp, writeBatch } from 'firebase/firestore'
-import { StaffSessionError, ensureClientUser, getStoredCardId, storeCardId } from '../lib/client.js'
-import { db } from '../lib/firebase.js'
+import { db, ensureClientUser, getStoredCardId, storeCardId } from '../lib/client.js'
 import { isStandalone, registerServiceWorker } from '../lib/pwa.js'
 import { generateRecoveryCode } from '../lib/recovery-code.js'
 
@@ -72,11 +71,8 @@ form.addEventListener('submit', async (event) => {
   try {
     const user = await ensureClientUser()
     cardId = await createCard(user.uid, firstName)
-  } catch (error) {
-    errorEl.textContent =
-      error instanceof StaffSessionError
-        ? error.message
-        : 'Impossible de créer la carte pour le moment. Réessaie dans un instant.'
+  } catch {
+    errorEl.textContent = 'Impossible de créer la carte pour le moment. Réessaie dans un instant.'
     submitBtn.disabled = false
     return
   } finally {

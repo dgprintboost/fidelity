@@ -2,7 +2,10 @@ import '../style.css'
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { collection, doc, getDoc, serverTimestamp, writeBatch } from 'firebase/firestore'
 import QrScanner from 'qr-scanner'
-import { auth, db } from '../lib/firebase.js'
+import { STAFF_APP_NAME, initFirebase } from '../lib/firebase.js'
+
+// Instance Firebase propre à l'espace équipe : sa connexion ne touche jamais l'identité anonyme du client.
+const { auth, db } = initFirebase(STAFF_APP_NAME)
 
 const STAMPS_FOR_REWARD = 10
 const COOLDOWN_MS = 60 * 60 * 1000
