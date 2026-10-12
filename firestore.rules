@@ -6,6 +6,7 @@ rules_version = '2';
 //   staff/{uid}                     compte équipe (créé à la main dans la console, jamais depuis le site)
 //   cards/{cardId}                  { ownerUid, firstName, stamps, lastStamp, createdAt, lastEventId?, recoveredWith? }
 //   cards/{cardId}/history/{id}     { type: 'stamp' | 'reward', at, staffUid }   journal, jamais modifié ni lu depuis le site
+//   cards/{cardId}/private/recovery { code }                                     code de la carte, lisible par son seul propriétaire
 //   recovery/{code}                 { cardId }                                   code de secours, 10 caractères
 //
 // Cloisonnement des clients : un client ne lit et n'écrit que sa propre carte (ownerUid). Il ne peut ni lister
@@ -23,6 +24,11 @@ service cloud.firestore {
       return signedIn()
         && request.auth.token.firebase.sign_in_provider != 'anonymous'
         && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    // Alphabet sans caractères ambigus (pas de 0/O, 1/I/L), 10 caractères stockés sans tirets.
+    function isRecoveryCode(code) {
+      return code is string && code.matches('^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$');
     }
 
     function cardPath(cardId) {
@@ -81,6 +87,8 @@ service cloud.firestore {
       allow get: if (signedIn() && resource.data.ownerUid == request.auth.uid) || isStaff();
       allow list: if isStaff();
 
+      // La carte, son code de secours (recovery/{code}) et sa copie privée (private/recovery)
+      // sont créés ensemble, dans le même batch.
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['ownerUid', 'firstName', 'stamps', 'lastStamp', 'createdAt'])
         && request.resource.data.keys().hasAll(['ownerUid', 'firstName', 'stamps', 'lastStamp', 'createdAt'])
@@ -90,10 +98,24 @@ service cloud.firestore {
         && request.resource.data.firstName.size() <= 40
         && request.resource.data.stamps == 0
         && request.resource.data.lastStamp == null
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt == request.time
+        && existsAfter(/databases/$(database)/documents/cards/$(cardId)/private/recovery);
 
       allow update: if (isStaff() && (isStamp() || isReward())) || isRecovery();
       allow delete: if false;
+
+      // Code de secours de la carte : l'équipe ne le voit jamais (pas de fuite de tous les codes via un compte équipe).
+      match /private/{docId} {
+        allow get: if signedIn() && get(cardPath(cardId)).data.ownerUid == request.auth.uid;
+        allow list, update, delete: if false;
+
+        allow create: if docId == 'recovery'
+          && signedIn()
+          && getAfter(cardPath(cardId)).data.ownerUid == request.auth.uid
+          && request.resource.data.keys().hasOnly(['code'])
+          && isRecoveryCode(request.resource.data.code)
+          && getAfter(/databases/$(database)/documents/recovery/$(request.resource.data.code)).data.cardId == cardId;
+      }
 
       match /history/{eventId} {
         // Journal non consultable depuis le site (ni client ni équipe) : uniquement depuis la console Firebase.
@@ -116,9 +138,8 @@ service cloud.firestore {
       allow get: if signedIn();
       allow list, update, delete: if false;
 
-      // Alphabet sans caractères ambigus (pas de 0/O, 1/I/L), stocké sans tirets.
       allow create: if signedIn()
-        && code.matches('^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{10}$')
+        && isRecoveryCode(code)
         && request.resource.data.keys().hasOnly(['cardId'])
         && request.resource.data.cardId is string
         && getAfter(cardPath(request.resource.data.cardId)).data.ownerUid == request.auth.uid;

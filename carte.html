@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07090d">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
   <title>Tasty Crousty · Ma carte</title>
 </head>
 <body class="page">
@@ -48,7 +51,23 @@
       <p class="text-[11px] text-gray-400">Fais une capture d'écran : ce code te permet de retrouver ta carte si tu changes de téléphone.</p>
     </section>
 
+    <!-- Incitation à installer la carte : sur iPhone, une carte non installée est effacée après 7 jours sans visite. -->
+    <section id="installCard" class="hidden bg-crousty-pink/10 border border-crousty-pink/40 rounded-xl p-4 flex-col gap-2 animate-fade-in-up [animation-delay:0.4s]">
+      <h2 class="text-sm font-black text-crousty-pink">📲 Ajoute ta carte à ton écran d'accueil</h2>
+      <p class="text-[12px] text-gray-300">Elle s'ouvrira comme une app et ne sera jamais perdue.</p>
+      <ol id="installIos" class="hidden list-decimal list-inside text-[12px] text-gray-300 space-y-1">
+        <li>Fais une capture d'écran de ton code de secours.</li>
+        <li>Touche le bouton Partager <span aria-hidden="true">⎋</span> puis « Sur l'écran d'accueil ».</li>
+        <li>Ouvre l'app Crousty et saisis ton code : ta carte s'y retrouve.</li>
+      </ol>
+      <button id="installBtn" class="hidden btn-primary" type="button">Installer la carte</button>
+    </section>
+
     <p id="cardError" class="text-xs text-crousty-pink text-center min-h-4" role="alert"></p>
+    <div id="lostCardActions" class="hidden flex-col gap-2">
+      <a href="./recuperer.html" class="btn-secondary">J'ai mon code de secours</a>
+      <button id="newCardBtn" class="text-[11px] text-gray-400 underline" type="button">Je n'ai plus mon code : créer une nouvelle carte</button>
+    </div>
 
     <p class="footer-note">Tasty Crousty • Carte de fidélité</p>
   </main>

@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app'
+import { initializeApp, setLogLevel } from 'firebase/app'
 import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check'
 import { browserLocalPersistence, indexedDBLocalPersistence, initializeAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
@@ -14,21 +14,20 @@ const firebaseConfig = {
   appId: env.VITE_FIREBASE_APP_ID,
 }
 
-const required = {
-  VITE_FIREBASE_API_KEY: firebaseConfig.apiKey,
-  VITE_FIREBASE_AUTH_DOMAIN: firebaseConfig.authDomain,
-  VITE_FIREBASE_PROJECT_ID: firebaseConfig.projectId,
-  VITE_FIREBASE_APP_ID: firebaseConfig.appId,
-  VITE_RECAPTCHA_SITE_KEY: env.VITE_RECAPTCHA_SITE_KEY,
-}
-const missing = Object.keys(required).filter((key) => !required[key])
-if (missing.length) {
-  throw new Error(`Configuration Firebase incomplète dans .env.local : ${missing.join(', ')}`)
-}
+// La présence de ces variables est vérifiée par vite.config.js (dev, build et preview échouent sinon) :
+// aucune vérification ici, pour ne rien afficher dans la console du navigateur.
 
-// En local (dev et `vite preview`), App Check utilise un jeton de debug à enregistrer dans la console Firebase.
-if (env.DEV || ['localhost', '127.0.0.1'].includes(location.hostname)) {
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true
+// Aucun message Firebase dans la console du navigateur : les erreurs sont présentées dans la page.
+setLogLevel('silent')
+
+// En dev uniquement, App Check utilise un jeton de debug fixe lu dans .env.development.local
+// (fichier jamais chargé au build, donc jamais publié). Le SDK l'affiche dans la console en dev :
+// accepté, la règle « rien dans la console » ne vise que le site publié.
+// Sans jeton, App Check passe par reCAPTCHA (localhost déclaré dans la clé).
+// import.meta.env.DEV écrit en toutes lettres : Vite remplace la condition par false au build et
+// supprime le bloc, ce qui garantit que le jeton ne peut pas finir dans le site publié.
+if (import.meta.env.DEV && import.meta.env.VITE_APPCHECK_DEBUG_TOKEN) {
+  self.FIREBASE_APPCHECK_DEBUG_TOKEN = import.meta.env.VITE_APPCHECK_DEBUG_TOKEN
 }
 
 export const app = initializeApp(firebaseConfig)
